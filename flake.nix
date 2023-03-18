@@ -5,12 +5,13 @@
     nixpkgs.follows = "cargo2nix/nixpkgs";
   };
 
-  outputs = inputs: with inputs;
+  outputs = inputs:
+    with inputs;
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [cargo2nix.overlays.default];
+          overlays = [ cargo2nix.overlays.default ];
         };
 
         rustPkgs = pkgs.rustBuilder.makePackageSet {
@@ -20,11 +21,9 @@
 
       in rec {
         packages = {
-          # replace tomtom with your package name
-          tomtom = (rustPkgs.workspace.tomtom {}).bin;
-          tests = (rustPkgs.workspace.tomtom {}).bin;
+          tests = (pkgs.rustBuilder.runTests rustPkgs.workspace.tomtom { });
+          tomtom = (rustPkgs.workspace.tomtom { }).bin;
           default = packages.tomtom;
         };
-      }
-    );
+      });
 }
